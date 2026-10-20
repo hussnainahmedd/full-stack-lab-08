@@ -1,0 +1,839 @@
+{
+  "info": {
+    "name": "CS-301L Lab 08 - NestJS Student API",
+    "description": "Tests for the Lab 08 NestJS API: dependency injection, DTOs and ValidationPipe. Start the server (npm run start:dev) and run the whole collection with the Collection Runner. It cleans up after itself, so it can be re-run.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. GET all students",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200 (OK)\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"Six students, each with a status\", function () {",
+              "  const d = pm.response.json();",
+              "  pm.expect(d.length).to.eql(6);",
+              "  d.forEach(function (s) { pm.expect(s).to.have.property(\"status\"); });",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/students",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "students"
+          ]
+        }
+      }
+    },
+    {
+      "name": "2. GET statistics",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200 (OK)\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"Statistics are correct\", function () {",
+              "  const s = pm.response.json();",
+              "  pm.expect(s.totalStudents).to.eql(6);",
+              "  pm.expect(s.averageCgpa).to.eql(3.02);",
+              "  pm.expect(s.highest.name).to.eql(\"Sara Ahmed\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/students/stats",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "students",
+            "stats"
+          ]
+        }
+      }
+    },
+    {
+      "name": "3. GET filter + minCgpa + sort + limit",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200 (OK)\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"Only the best Data Science student is returned\", function () {",
+              "  const d = pm.response.json();",
+              "  pm.expect(d.length).to.eql(1);",
+              "  pm.expect(d[0].rollNumber).to.eql(\"BSCS-050\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/students?department=Data Science&minCgpa=1&sort=cgpa&order=desc&limit=1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "students"
+          ],
+          "query": [
+            {
+              "key": "department",
+              "value": "Data Science"
+            },
+            {
+              "key": "minCgpa",
+              "value": "1"
+            },
+            {
+              "key": "sort",
+              "value": "cgpa"
+            },
+            {
+              "key": "order",
+              "value": "desc"
+            },
+            {
+              "key": "limit",
+              "value": "1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "4. GET one student (lower-case roll number)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200 (OK)\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"The param DTO upper-cased the roll number\", function () {",
+              "  const s = pm.response.json();",
+              "  pm.expect(s.name).to.eql(\"Sara Ahmed\");",
+              "  pm.expect(s.rollNumber).to.eql(\"BSCS-023\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/students/bscs-023",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "students",
+            "bscs-023"
+          ]
+        }
+      }
+    },
+    {
+      "name": "5. GET unknown student (negative)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 404 (Not Found)\", function () { pm.response.to.have.status(404); });",
+              "pm.test(\"Nest NotFoundException body\", function () {",
+              "  const b = pm.response.json();",
+              "  pm.expect(b.statusCode).to.eql(404);",
+              "  pm.expect(b.message).to.include(\"BSCS-777\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/students/BSCS-777",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "students",
+            "BSCS-777"
+          ]
+        }
+      }
+    },
+    {
+      "name": "6. GET invalid roll number format (negative)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 400 (Bad Request)\", function () { pm.response.to.have.status(400); });",
+              "pm.test(\"Details mention: rollNumber must look like BSCS-001\", function () {",
+              "  pm.expect(pm.response.json().details.join(\" | \")).to.include(\"rollNumber must look like BSCS-001\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/students/abc",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "students",
+            "abc"
+          ]
+        }
+      }
+    },
+    {
+      "name": "7. GET query with minCgpa=abc (negative)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 400 (Bad Request)\", function () { pm.response.to.have.status(400); });",
+              "pm.test(\"Details mention: minCgpa must be a number\", function () {",
+              "  pm.expect(pm.response.json().details.join(\" | \")).to.include(\"minCgpa must be a number\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/students?minCgpa=abc",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "students"
+          ],
+          "query": [
+            {
+              "key": "minCgpa",
+              "value": "abc"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "8. GET query with sort=name (negative)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 400 (Bad Request)\", function () { pm.response.to.have.status(400); });",
+              "pm.test(\"Details mention: sort can only be\", function () {",
+              "  pm.expect(pm.response.json().details.join(\" | \")).to.include(\"sort can only be\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/students?sort=name",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "students"
+          ],
+          "query": [
+            {
+              "key": "sort",
+              "value": "name"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "9. POST create (messy input is cleaned)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 201 (Created)\", function () { pm.response.to.have.status(201); });",
+              "pm.test(\"class-transformer trimmed, upper-cased and lower-cased the values\", function () {",
+              "  const s = pm.response.json();",
+              "  pm.expect(s.name).to.eql(\"Zara Ali\");",
+              "  pm.expect(s.rollNumber).to.eql(\"BSCS-099\");",
+              "  pm.expect(s.email).to.eql(\"zara@example.com\");",
+              "  pm.expect(s.status).to.eql(\"Excellent\");",
+              "});",
+              "pm.collectionVariables.set(\"newRoll\", pm.response.json().rollNumber);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/students",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "students"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"  Zara Ali \",\n  \"rollNumber\": \"bscs-099\",\n  \"email\": \"Zara@Example.com\",\n  \"department\": \"Data Science\",\n  \"semester\": 3,\n  \"cgpa\": 3.25\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "10. POST duplicate roll number (negative)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 409 (Conflict)\", function () { pm.response.to.have.status(409); });",
+              "pm.test(\"Error mentions the roll number\", function () { pm.expect(pm.response.json().message).to.include(\"BSCS-099\"); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/students",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "students"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"  Zara Ali \",\n  \"rollNumber\": \"bscs-099\",\n  \"email\": \"Zara@Example.com\",\n  \"department\": \"Data Science\",\n  \"semester\": 3,\n  \"cgpa\": 3.25\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "11. POST all fields invalid (negative)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 400 (Bad Request)\", function () { pm.response.to.have.status(400); });",
+              "pm.test(\"Error is Validation failed\", function () { pm.expect(pm.response.json().error).to.eql(\"Validation failed\"); });",
+              "pm.test(\"Every invalid field is reported\", function () { pm.expect(pm.response.json().details.length).to.be.at.least(6); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/students",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "students"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Al\",\n  \"rollNumber\": \"X1\",\n  \"email\": \"nope\",\n  \"department\": \"Art\",\n  \"semester\": 12,\n  \"cgpa\": 9\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "12. POST numbers sent as text (negative)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 400 (Bad Request)\", function () { pm.response.to.have.status(400); });",
+              "pm.test(\"Error is Validation failed\", function () { pm.expect(pm.response.json().error).to.eql(\"Validation failed\"); });",
+              "pm.test(\"Details mention: semester must be a whole number\", function () {",
+              "  pm.expect(pm.response.json().details.join(\" | \")).to.include(\"semester must be a whole number\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/students",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "students"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"  Zara Ali \",\n  \"rollNumber\": \"BSCS-098\",\n  \"email\": \"Zara@Example.com\",\n  \"department\": \"Data Science\",\n  \"semester\": \"3\",\n  \"cgpa\": \"3.5\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "13. POST extra property isAdmin (negative)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 400 (Bad Request)\", function () { pm.response.to.have.status(400); });",
+              "pm.test(\"Error is Validation failed\", function () { pm.expect(pm.response.json().error).to.eql(\"Validation failed\"); });",
+              "pm.test(\"Details mention: should not exist\", function () {",
+              "  pm.expect(pm.response.json().details.join(\" | \")).to.include(\"should not exist\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/students",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "students"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"  Zara Ali \",\n  \"rollNumber\": \"BSCS-098\",\n  \"email\": \"Zara@Example.com\",\n  \"department\": \"Data Science\",\n  \"semester\": 3,\n  \"cgpa\": 3.25,\n  \"isAdmin\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "14. POST malformed JSON (negative)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 400 (Bad Request)\", function () { pm.response.to.have.status(400); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/students",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "students"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"name\": \"Broken\", ",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "15. PUT replace student",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200 (OK)\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"Name and semester were replaced\", function () {",
+              "  const s = pm.response.json();",
+              "  pm.expect(s.name).to.eql(\"Zara Khan\");",
+              "  pm.expect(s.semester).to.eql(4);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/students/{{newRoll}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "students",
+            "{{newRoll}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Zara Khan\",\n  \"email\": \"zara@example.com\",\n  \"department\": \"Data Science\",\n  \"semester\": 4,\n  \"cgpa\": 3.25\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "16. PATCH update CGPA only",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200 (OK)\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"CGPA changed, everything else kept\", function () {",
+              "  const s = pm.response.json();",
+              "  pm.expect(s.cgpa).to.eql(1.5);",
+              "  pm.expect(s.name).to.eql(\"Zara Khan\");",
+              "  pm.expect(s.status).to.eql(\"Academic Warning\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/students/{{newRoll}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "students",
+            "{{newRoll}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cgpa\": 1.5\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "17. PATCH invalid CGPA (negative)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 400 (Bad Request)\", function () { pm.response.to.have.status(400); });",
+              "pm.test(\"Error is Validation failed\", function () { pm.expect(pm.response.json().error).to.eql(\"Validation failed\"); });",
+              "pm.test(\"Details mention: cgpa must not be greater than 4\", function () {",
+              "  pm.expect(pm.response.json().details.join(\" | \")).to.include(\"cgpa must not be greater than 4\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/students/{{newRoll}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "students",
+            "{{newRoll}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cgpa\": 5\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "18. PATCH tries to change rollNumber (negative)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 400 (Bad Request)\", function () { pm.response.to.have.status(400); });",
+              "pm.test(\"Error is Validation failed\", function () { pm.expect(pm.response.json().error).to.eql(\"Validation failed\"); });",
+              "pm.test(\"Details mention: should not exist\", function () {",
+              "  pm.expect(pm.response.json().details.join(\" | \")).to.include(\"should not exist\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/students/{{newRoll}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "students",
+            "{{newRoll}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"rollNumber\": \"BSCS-500\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "19. DELETE student",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 204 (No Content)\", function () { pm.response.to.have.status(204); });",
+              "pm.test(\"Response body is empty\", function () { pm.expect(pm.response.text()).to.eql(\"\"); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/students/{{newRoll}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "students",
+            "{{newRoll}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "20. GET deleted student (negative)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 404 (Not Found)\", function () { pm.response.to.have.status(404); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/students/{{newRoll}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "students",
+            "{{newRoll}}"
+          ]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "newRoll",
+      "value": "BSCS-099",
+      "type": "string"
+    }
+  ]
+}

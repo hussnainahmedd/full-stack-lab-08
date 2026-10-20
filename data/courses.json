@@ -1,0 +1,71 @@
+[
+  {
+    "code": "CS-201",
+    "creditHours": 3,
+    "department": "Computer Science",
+    "description": "Lists, stacks, queues, trees and graphs.",
+    "instructor": "Dr. Ayesha Khan",
+    "tags": [
+      "core",
+      "theory"
+    ],
+    "title": "Data Structures"
+  },
+  {
+    "code": "CS-301L",
+    "creditHours": 3,
+    "department": "Computer Science",
+    "description": "Hands-on lab for the Full Stack Web Development course.",
+    "instructor": "Dr. Hamza Rauf",
+    "tags": [
+      "lab",
+      "web"
+    ],
+    "title": "Full Stack Web Development Lab"
+  },
+  {
+    "code": "CS-311",
+    "creditHours": 3,
+    "department": "Computer Science",
+    "description": "Protocols, routing and the TCP/IP stack.",
+    "instructor": "Dr. Bilal Ahmed",
+    "tags": [
+      "networks"
+    ],
+    "title": "Computer Networks"
+  },
+  {
+    "code": "CS-331",
+    "creditHours": 3,
+    "department": "Software Engineering",
+    "description": "Creational, structural and behavioural patterns.",
+    "instructor": "Dr. Maria Aslam",
+    "tags": [
+      "design"
+    ],
+    "title": "Software Design Patterns"
+  },
+  {
+    "code": "CS-341",
+    "creditHours": 3,
+    "department": "Data Science",
+    "description": "Regression, classification and clustering.",
+    "instructor": "Dr. Omar Farooq",
+    "tags": [
+      "ai",
+      "data"
+    ],
+    "title": "Machine Learning"
+  },
+  {
+    "code": "CS-321",
+    "creditHours": 2,
+    "department": "Computer Science",
+    "description": "Lexing, parsing and code generation.",
+    "instructor": "Dr. Hamza Rauf",
+    "tags": [
+      "theory"
+    ],
+    "title": "Compiler Construction"
+  }
+]
